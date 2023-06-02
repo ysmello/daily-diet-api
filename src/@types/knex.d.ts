@@ -7,14 +7,17 @@ declare module 'knex/types/tables' {
       id: string
       name: string
       email: string
+      password: string
       created_at: string
     }
 
     diets: {
+      id: string
       name: string
       description: string
-      time: Date
       compliant: boolean
+      created_at: string
+      user_id: string
     }
   }
 }
