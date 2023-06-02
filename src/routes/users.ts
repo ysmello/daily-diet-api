@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { randomUUID } from 'crypto'
+
 import { knex } from '../database'
 
 export async function usersRoutes(app: FastifyInstance) {
@@ -14,6 +15,18 @@ export async function usersRoutes(app: FastifyInstance) {
     const { name, email, password } = createUserBodySchema.parse(request.body)
 
     const user = await knex('users').select().where('email', email).first()
+    const uuid = randomUUID()
+
+    let sessionId = request.cookies.sessionId
+
+    if (!sessionId) {
+      sessionId = uuid
+
+      reply.cookie('sessionId', sessionId, {
+        path: '/',
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      })
+    }
 
     if (user) {
       return reply.status(400).send({
@@ -22,7 +35,7 @@ export async function usersRoutes(app: FastifyInstance) {
     }
 
     await knex('users').insert({
-      id: randomUUID(),
+      id: uuid,
       name,
       email,
       password,
@@ -31,9 +44,11 @@ export async function usersRoutes(app: FastifyInstance) {
     return reply.status(201).send()
   })
 
-  app.get('/', async (request, reply) => {
-    const users = await knex('users').select()
+  // app.get('/metrics', async (request, reply) => {
+  //   const { sessionId } = request.cookies
 
-    return { users }
-  })
+  //   const users = await knex('users').select().where('id', sessionId)
+
+  //   return { users }
+  // })
 }

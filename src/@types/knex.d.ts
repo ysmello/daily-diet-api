@@ -12,6 +12,7 @@ declare module 'knex/types/tables' {
     }
 
     diets: {
+      id: string
       name: string
       description: string
       compliant: boolean
